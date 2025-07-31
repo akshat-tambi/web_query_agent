@@ -117,7 +117,14 @@ function App() {
                 disabled={loading || !query.trim()}
                 className="submit-button"
               >
-                {loading ? <Clock className="spinning" /> : <Send />}
+                {loading ? (
+                  <>
+                    <Clock className="spinning" />
+                    {response ? 'Processing...' : 'Searching & analyzing...'}
+                  </>
+                ) : (
+                  <Send />
+                )}
               </button>
             </div>
 
@@ -172,6 +179,21 @@ function App() {
             </div>
           )}
         </div>
+
+        {loading && (
+          <div className="loading-section">
+            <div className="loading-content">
+              <Clock className="loading-spinner" />
+              <h3>Processing your query...</h3>
+              <p>
+                {response ? 
+                  'Generating AI response...' : 
+                  'This may take 30-60 seconds for new queries as we search the web and analyze content. Cached results are much faster!'
+                }
+              </p>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="error-message">

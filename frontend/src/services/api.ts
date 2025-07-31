@@ -5,7 +5,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000
 
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api/v1`,
-  timeout: 30000, // 30 seconds timeout for queries
+  timeout: 120000, // 2 minutes timeout for queries (web scraping + AI can take time)
   headers: {
     'Content-Type': 'application/json',
   },
@@ -85,7 +85,10 @@ export const handleApiError = (error: any): string => {
       }
       return detail || error.response.data?.message || `Server error: ${error.response.status}`;
     } else if (error.request) {
-      // Network error
+      // Network error or timeout
+      if (error.code === 'ECONNABORTED') {
+        return 'Query is taking longer than expected. This usually happens for new queries that require web scraping. Please try again - cached results will be much faster.';
+      }
       return 'Network error - please check if the backend server is running';
     }
   }
