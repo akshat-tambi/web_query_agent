@@ -8,9 +8,18 @@ import os
 import sys
 import json
 import asyncio
+import warnings
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 from datetime import datetime
+
+# Suppress warnings for cleaner output
+warnings.filterwarnings("ignore", category=UserWarning, module="langchain_google_genai")
+warnings.filterwarnings("ignore", category=FutureWarning, module="torch")
+warnings.filterwarnings("ignore", message=".*tokenizers.*", category=UserWarning)
+
+# Set environment variable to suppress tokenizer parallelism warning
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 import click
 import numpy as np
@@ -42,8 +51,7 @@ def initialize_models():
         llm = ChatGoogleGenerativeAI(
             model="gemini-1.5-flash",
             google_api_key=config.GEMINI_API_KEY,
-            temperature=0.3,
-            convert_system_message_to_human=True
+            temperature=0.3
         )
         
         # Initialize embedding model
@@ -200,7 +208,11 @@ def get_summary_from_web(query: str) -> str:
         from web_scraper import scrape_web_content, generate_summary_with_langchain
         
         # Run async web scraping
-        urls_and_content = asyncio.run(scrape_web_content(query, config.MAX_SEARCH_RESULTS))
+        urls_and_content = asyncio.run(scrape_web_content(
+            query, 
+            config.MAX_SEARCH_RESULTS, 
+            config.SEARCH_ENGINE
+        ))
         
         if not urls_and_content:
             return "❌ No content found for this query."
@@ -221,7 +233,7 @@ def get_summary_from_web(query: str) -> str:
         
         # Generate summary using LangChain
         print("🤖 Generating summary...")
-        summary = generate_summary_with_langchain(documents, query, llm)
+        summary = generate_summary_with_langchain(documents, query, llm, config.MAX_CONTENT_LENGTH)
         
         return summary
         
@@ -234,11 +246,11 @@ def get_summary_from_web(query: str) -> str:
 @click.option('--interactive', '-i', is_flag=True, help='Run in interactive mode')
 def main(query, interactive):
     """
-    Ripplica Web Browser Query Agent
+    Web Browser Query Agent
     
     Process web queries with intelligent caching and summarization.
     """
-    print("�🔍 Ripplica Query Agent")
+    print("🔍 Web Browser Query Agent")
     print("=" * 30)
     
     try:

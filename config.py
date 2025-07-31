@@ -1,5 +1,5 @@
 """
-Configuration management for Ripplica Query Agent
+Configuration management for Web Query Agent
 """
 
 import os
