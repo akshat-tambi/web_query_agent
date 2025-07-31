@@ -29,7 +29,7 @@ class Config:
     # Search Configuration
     MAX_SEARCH_RESULTS = int(os.getenv("MAX_SEARCH_RESULTS", "5"))
     SIMILARITY_THRESHOLD = float(os.getenv("SIMILARITY_THRESHOLD", "0.85"))
-    SEARCH_ENGINE = os.getenv("SEARCH_ENGINE", "duckduckgo")
+    SEARCH_ENGINE = os.getenv("SEARCH_ENGINE", "bing")
     MAX_CONTENT_LENGTH = int(os.getenv("MAX_CONTENT_LENGTH", "10000"))
     
     @classmethod

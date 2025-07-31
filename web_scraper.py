@@ -25,20 +25,20 @@ async def scrape_web_content(query: str, max_results: int = 5) -> List[Tuple[str
         page = await browser.new_page()
         
         try:
-            # Search on DuckDuckGo
-            search_url = f"https://duckduckgo.com/?q={query.replace(' ', '+')}"
+            # Search on Bing (more bot-friendly)
+            search_url = f"https://www.bing.com/search?q={query.replace(' ', '+')}"
             await page.goto(search_url, wait_until="networkidle")
             
             # Wait for results to load
-            await page.wait_for_selector('[data-testid="result"]', timeout=10000)
+            await page.wait_for_selector('.b_algo h2 a', timeout=10000)
             
             # Extract search result URLs
-            result_elements = await page.query_selector_all('[data-testid="result"] h2 a')
+            result_elements = await page.query_selector_all('.b_algo h2 a')
             urls = []
             
             for element in result_elements[:max_results]:
                 href = await element.get_attribute('href')
-                if href and href.startswith('http'):
+                if href and href.startswith('http') and 'bing.com' not in href:
                     urls.append(href)
             
             print(f"🔗 Found {len(urls)} URLs to scrape")
@@ -90,7 +90,7 @@ async def scrape_web_content(query: str, max_results: int = 5) -> List[Tuple[str
 
 def generate_summary_with_langchain(documents: List[Document], query: str, llm) -> str:
     """
-    Generate summary using LangChain's map-reduce strategy
+    Generate summary using a single API call to avoid rate limits
     
     Args:
         documents: List of documents to summarize
@@ -104,24 +104,28 @@ def generate_summary_with_langchain(documents: List[Document], query: str, llm) 
         if not documents:
             return "❌ No content available to summarize."
         
-        # Use text splitter to handle large documents
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000,
-            chunk_overlap=100
-        )
+        # Combine all content into a single text with reasonable length
+        combined_content = ""
+        for doc in documents:
+            # Limit each document to prevent excessive length
+            content = doc.page_content[:2000]  # Limit per document
+            combined_content += f"\n\nSource: {doc.metadata.get('source', 'Unknown')}\n{content}"
         
-        split_docs = text_splitter.split_documents(documents)
+        # Limit total content length to stay within API limits
+        max_content_length = 8000  # Conservative limit for Gemini
+        if len(combined_content) > max_content_length:
+            combined_content = combined_content[:max_content_length] + "\n\n[Content truncated...]"
         
-        # Create summarization chain
-        chain = load_summarize_chain(
-            llm,
-            chain_type="map_reduce",
-            verbose=False
-        )
+        # Create a single prompt for summarization
+        prompt = f"""Based on the following web content about "{query}", provide a comprehensive summary:
+
+{combined_content}
+
+Please provide a clear, informative summary that answers the query "{query}" based on the above content."""
         
-        result = chain.invoke({"input_documents": split_docs})
-        
-        return result["output_text"]
+        # Make a single API call
+        response = llm.invoke(prompt)
+        return response.content
         
     except Exception as e:
         print(f"❌ Error generating summary: {e}")

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Ripplica Web Browser Query Agent
+Web Browser Query Agent
 Main entry point for the CLI application
 """
 
@@ -228,17 +228,6 @@ def get_summary_from_web(query: str) -> str:
     except Exception as e:
         print(f"❌ Error getting summary from web: {e}")
         return f"❌ Error occurred while processing your query: {str(e)}"
-
-def save_to_cache(query: str, summary: str) -> None:
-    """
-    Save query and summary to cache for future use
-    
-    Args:
-        query: Original user query
-        summary: Generated summary
-    """
-    # TODO: Implement using FAISS vector storage
-    print(f"� Saving to cache: {query[:50]}...")
 
 @click.command()
 @click.argument('query', required=False)
