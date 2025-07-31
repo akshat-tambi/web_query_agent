@@ -9,8 +9,15 @@ import sys
 import json
 import asyncio
 from pathlib import Path
-from typing import Optional, List, Dict, Any
-from datetime import datetime
+from typing import Optional,             print(f"📋 Found similar query: '{cached_data['query']}' (similarity: {similarities[0][0]:.3f})")
+            return cached_data['summary']
+        else:
+            print(f"🔍 No similar queries found (best similarity: {similarities[0][0]:.3f})")
+            return None
+            
+    except Exception as e:
+        print(f"❌ Error searching cache: {e}")
+        return Nonet, Any
 
 import click
 import numpy as np
@@ -23,6 +30,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.schema import Document
 from langchain.chains.summarize import load_summarize_chain
+from datetime import datetime
 
 from config import config
 
@@ -96,6 +104,39 @@ def save_faiss_index():
             
     except Exception as e:
         print(f"❌ Error saving FAISS index: {e}")
+
+def save_to_cache(query: str, summary: str) -> None:
+    """
+    Save query and summary to cache using FAISS vector storage
+    
+    Args:
+        query: Original user query
+        summary: Generated summary
+    """
+    try:
+        print(f"💾 Saving to cache: {query[:50]}...")
+        
+        # Generate embedding for the query
+        query_embedding = embedding_model.encode([query], convert_to_tensor=False, normalize_embeddings=True)
+        query_vector = np.array(query_embedding, dtype=np.float32)
+        
+        # Add to FAISS index
+        faiss_index.add(query_vector)
+        
+        # Add metadata
+        query_metadata.append({
+            "query": query,
+            "summary": summary,
+            "timestamp": datetime.now().isoformat()
+        })
+        
+        # Save to disk
+        save_faiss_index()
+        
+        print(f"✅ Cached successfully! Total entries: {faiss_index.ntotal}")
+        
+    except Exception as e:
+        print(f"❌ Error saving to cache: {e}")
 
 # Core agent functions
 def validate_query(query: str) -> bool:
@@ -196,11 +237,8 @@ def get_summary_from_web(query: str) -> str:
     try:
         print(f"🌐 Searching web for: {query}")
         
-        # Import web scraper functions
-        from web_scraper import scrape_web_content, generate_summary_with_langchain
-        
         # Run async web scraping
-        urls_and_content = asyncio.run(scrape_web_content(query, config.MAX_SEARCH_RESULTS))
+        urls_and_content = asyncio.run(scrape_web_content(query))
         
         if not urls_and_content:
             return "❌ No content found for this query."
@@ -221,13 +259,148 @@ def get_summary_from_web(query: str) -> str:
         
         # Generate summary using LangChain
         print("🤖 Generating summary...")
-        summary = generate_summary_with_langchain(documents, query, llm)
+        summary = generate_summary_with_langchain(documents, query)
         
         return summary
         
     except Exception as e:
         print(f"❌ Error getting summary from web: {e}")
         return f"❌ Error occurred while processing your query: {str(e)}"
+
+async def scrape_web_content(query: str) -> List[tuple]:
+    """
+    Scrape web content using Playwright
+    
+    Args:
+        query: Search query
+        
+    Returns:
+        List of (url, content) tuples
+    """
+    urls_and_content = []
+    
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
+        page = await browser.new_page()
+        
+        try:
+            # Search on DuckDuckGo
+            search_url = f"https://duckduckgo.com/?q={query.replace(' ', '+')}"
+            await page.goto(search_url, wait_until="networkidle")
+            
+            # Wait for results to load
+            await page.wait_for_selector('[data-testid="result"]', timeout=10000)
+            
+            # Extract search result URLs
+            result_elements = await page.query_selector_all('[data-testid="result"] h2 a')
+            urls = []
+            
+            for element in result_elements[:config.MAX_SEARCH_RESULTS]:
+                href = await element.get_attribute('href')
+                if href and href.startswith('http'):
+                    urls.append(href)
+            
+            print(f"� Found {len(urls)} URLs to scrape")
+            
+            # Scrape content from each URL
+            for i, url in enumerate(urls):
+                try:
+                    print(f"📖 Scraping {i+1}/{len(urls)}: {url[:60]}...")
+                    
+                    await page.goto(url, wait_until="domcontentloaded", timeout=15000)
+                    
+                    # Extract text content using page.content() and BeautifulSoup
+                    html_content = await page.content()
+                    soup = BeautifulSoup(html_content, 'html.parser')
+                    
+                    # Remove script and style elements
+                    for script in soup(["script", "style", "nav", "header", "footer"]):
+                        script.decompose()
+                    
+                    # Extract text from main content areas
+                    content_selectors = [
+                        'main', 'article', '.content', '#content', 
+                        '.post', '.entry', 'p', 'h1', 'h2', 'h3'
+                    ]
+                    
+                    text_content = ""
+                    for selector in content_selectors:
+                        elements = soup.select(selector)
+                        for element in elements:
+                            text_content += element.get_text() + " "
+                    
+                    # Clean up text
+                    clean_text = ' '.join(text_content.split())
+                    
+                    if len(clean_text) > 200:  # Only include substantial content
+                        urls_and_content.append((url, clean_text))
+                    
+                except Exception as e:
+                    print(f"❌ Error scraping {url}: {str(e)[:50]}...")
+                    continue
+            
+        except Exception as e:
+            print(f"❌ Error during web search: {e}")
+        
+        finally:
+            await browser.close()
+    
+    return urls_and_content
+
+def generate_summary_with_langchain(documents: List[Document], query: str) -> str:
+    """
+    Generate summary using LangChain's map-reduce strategy
+    
+    Args:
+        documents: List of documents to summarize
+        query: Original query for context
+        
+    Returns:
+        str: Generated summary
+    """
+    try:
+        if not documents:
+            return "❌ No content available to summarize."
+        
+        # Use text splitter to handle large documents
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1000,
+            chunk_overlap=100
+        )
+        
+        split_docs = text_splitter.split_documents(documents)
+        
+        # Create summarization chain
+        chain = load_summarize_chain(
+            llm,
+            chain_type="map_reduce",
+            verbose=False
+        )
+        
+        # Generate summary with context
+        prompt_template = f"""
+        Based on the following content, provide a comprehensive summary that answers the query: "{query}"
+        
+        Focus on:
+        1. Key information relevant to the query
+        2. Important facts and details
+        3. Multiple perspectives if available
+        4. Actionable insights or recommendations
+        
+        Content to summarize:
+        """
+        
+        # Add custom prompt context
+        for doc in split_docs:
+            doc.page_content = prompt_template + doc.page_content
+        
+        result = chain.invoke({"input_documents": split_docs})
+        
+        return result["output_text"]
+        
+    except Exception as e:
+        print(f"❌ Error generating summary: {e}")
+        return f"❌ Error generating summary: {str(e)}"
 
 def save_to_cache(query: str, summary: str) -> None:
     """
@@ -256,10 +429,6 @@ def main(query, interactive):
         # Validate configuration
         config.validate()
         print("✅ Configuration validated")
-        
-        # Initialize models
-        initialize_models()
-        
     except ValueError as e:
         print(f"❌ Configuration error: {e}")
         sys.exit(1)
@@ -307,39 +476,6 @@ def process_query(query: str) -> None:
     
     # Step 5: Return result
     print(f"\n📄 Summary:\n{summary}")
-
-def save_to_cache(query: str, summary: str) -> None:
-    """
-    Save query and summary to cache using FAISS vector storage
-    
-    Args:
-        query: Original user query
-        summary: Generated summary
-    """
-    try:
-        print(f"💾 Saving to cache: {query[:50]}...")
-        
-        # Generate embedding for the query
-        query_embedding = embedding_model.encode([query], convert_to_tensor=False, normalize_embeddings=True)
-        query_vector = np.array(query_embedding, dtype=np.float32)
-        
-        # Add to FAISS index
-        faiss_index.add(query_vector)
-        
-        # Add metadata
-        query_metadata.append({
-            "query": query,
-            "summary": summary,
-            "timestamp": datetime.now().isoformat()
-        })
-        
-        # Save to disk
-        save_faiss_index()
-        
-        print(f"✅ Cached successfully! Total entries: {faiss_index.ntotal}")
-        
-    except Exception as e:
-        print(f"❌ Error saving to cache: {e}")
 
 if __name__ == "__main__":
     main()
