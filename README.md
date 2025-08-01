@@ -1,38 +1,56 @@
 # Web Query Agent
 
-An AI-powered web query agent with intelligent scraping, semantic caching, and a modern React frontend.
+An intelligent AI-powered web query application that searches, analyzes, and provides comprehensive answers to your questions by scraping and processing web content in real-time. Built with React, FastAPI, and Google Gemini AI.
 
-## Architecture└── 🚀 Development Workflow
-    1. cd backend && python3 run.py     # Start backend
-    2. cd frontend && npm run dev        # Start frontend (new terminal)
+For development, start both services:
+
+1. **Backend**: `cd backend && python3 run.py`
+2. **Frontend**: `cd frontend && npm run dev` (new terminal)
 
 🔗 URLs (when running):
-  Frontend:  http://localhost:5173
-  Backend:   http://localhost:8000
+- Frontend:  http://localhost:5173
+- Backend:   http://localhost:8000
+
+## Architecture
 
 - **Backend**: FastAPI REST API with AI/ML capabilities
-- **Frontend**: Modern React application built with Vite
+- **Frontend**: Modern React application built with Vite  
 - **AI/ML**: Google Gemini for responses, SentenceTransformers for embeddings, FAISS for caching
 
-## Features
+## ✨ Key Features
 
 ### Backend Features
-- 🔍 **Intelligent Web Scraping**: Uses Playwright to scrape multiple search engines
-- 🤖 **AI-Powered Responses**: Leverages Google Gemini for generating comprehensive answers
-- 💾 **Smart Caching**: FAISS-based semantic caching for faster responses
-- 🚀 **Fast API**: RESTful API built with FastAPI
+- 🔍 **Intelligent Web Scraping**: Uses Playwright to scrape multiple search engines (Bing, Google)
+- 🤖 **AI-Powered Responses**: Leverages Google Gemini for generating comprehensive, context-aware answers
+- 💾 **Smart Caching**: FAISS-based semantic caching for faster responses and reduced API costs
+- ✅ **Query Validation**: AI validates queries before processing to ensure quality responses
+- 🚀 **Fast API**: RESTful API built with FastAPI with automatic documentation
 - 📊 **Real-time Processing**: Asynchronous processing for better performance
 
 ### Frontend Features
-- 🎨 **Modern UI**: Clean, responsive React interface
-- ⚡ **Built with Vite**: Fast development and build process
+- 🎨 **Modern UI**: Clean, responsive React interface with modern design
+- ⚡ **Built with Vite**: Fast development and build process with TypeScript support
 - 🎯 **Real-time Status**: Shows backend health and cache statistics
-- 🔧 **Configurable**: Adjustable search parameters
-- 📱 **Responsive**: Works on desktop and mobile devices
+- 🔧 **Configurable**: Adjustable search parameters and engine selection
+- 📱 **Responsive**: Works seamlessly on desktop and mobile devices
+- 📝 **Rich Text**: Markdown rendering for bold/italic text in responses
+- 📚 **Search History**: Track and revisit previous queries
 
 ## Quick Start
 
 ### Prerequisites
+- **Python 3.8+** and **Node.js 16+**
+- **Google Gemini API Key** ([Get one here](https://makersuite.google.com/app/apikey))
+
+### Installation
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/akshat-tambi/web_query_agent.git
+   cd web_query_agent
+   ```
+
+2. **Environment Setup**:
 - Python 3.8+
 - Node.js 16+
 - npm
@@ -99,63 +117,42 @@ npm run dev
 4. **Click Submit** and wait for the AI-generated response
 5. **View sources** and click links to visit original content
 
-## API Documentation
-
-When the backend is running, visit:
-- **Interactive API Docs**: http://localhost:8000/docs
-- **ReDoc Documentation**: http://localhost:8000/redoc
-
 ### Main Endpoints
 
-- `POST /api/v1/query` - Process a web query
-- `GET /api/v1/health` - Health check
+- `POST /api/v1/query` - Process a web query  
 - `GET /api/v1/cache/stats` - Cache statistics
-- `POST /api/v1/initialize` - Initialize AI models
 
 ## Project Structure
 
 ```
-📁 AI Web Query Application
-======================================
-
-🗂️  Project Root
-├── � package.json        # Root scripts & dependencies
-├── �🔧 Backend (FastAPI)
+Web Query Agent
+├── � package.json           # Root scripts & dependencies  
+├── 🏗️ backend/               # FastAPI Backend
 │   ├── app/
-│   │   ├── api/           # REST API endpoints  
-│   │   ├── models/        # Pydantic schemas
-│   │   ├── services/      # Business logic
-│   │   ├── config.py      # Configuration
-│   │   └── main.py        # FastAPI application
-│   ├── data/              # 💾 Cache files (FAISS)
-│   ├── requirements.txt   # Python dependencies
-│   ├── run.py            # Server startup
-│   ├── .env              # Environment variables
-│   └── COMMANDS.md       # Backend commands
+│   │   ├── api/              # REST API endpoints  
+│   │   ├── models/           # Pydantic schemas
+│   │   ├── services/         # Business logic
+│   │   ├── config.py         # Configuration
+│   │   └── main.py           # FastAPI application
+│   ├── data/                 # 💾 Cache files (FAISS)
+│   ├── requirements.txt      # Python dependencies
+│   ├── run.py               # Server startup
+│   └── .env                 # Environment variables
 │
-├── 🎨 Frontend (React + Vite)
-│   ├── src/
-│   │   ├── services/     # API client
-│   │   ├── App.tsx       # Main component
-│   │   └── ...           # Other components
-│   ├── package.json      # Node dependencies & scripts
-│   ├── tsconfig.json     # TypeScript configuration
-│   └── .env              # Environment variables
-│
-└── � Available Commands
-    npm run dev             # Start both services
-    npm run dev:backend     # Backend only
-    npm run dev:frontend    # Frontend only
-    npm run install:all     # Install all dependencies
-    npm run build           # Build for production
-    npm run health          # Check system health
-
-🔗 URLs (when running):
-  Frontend:  http://localhost:5173
-  Backend:   http://localhost:8000
-  API Docs:  http://localhost:8000/docs
-
+├── 🎨 frontend/              # React + Vite Frontend
+    ├── src/
+    │   ├── services/        # API client
+    │   ├── utils/           # Utilities (text formatting)
+    │   ├── App.tsx          # Main component
+    │   └── App.css          # Modern styling
+    ├── package.json         # Node dependencies & scripts
+    ├── tsconfig.json        # TypeScript configuration
+    └── .env                 # Environment variables
 ```
+
+**🔗 URLs (when running):**
+- Frontend:  http://localhost:5173
+- Backend:   http://localhost:8000
 
 ## Configuration
 
@@ -164,12 +161,14 @@ When the backend is running, visit:
 - `API_HOST`: Server host (default: 0.0.0.0)
 - `API_PORT`: Server port (default: 8000)
 - `DEBUG`: Debug mode (true/false)
+- `EMBEDDING_MODEL`: Sentence transformer model (default: all-MiniLM-L6-v2)
 - `EMBEDDING_DIMENSION`: Vector dimension (default: 384)
 - `SIMILARITY_THRESHOLD`: Cache similarity threshold (default: 0.85)
 - `MAX_CONTENT_LENGTH`: Content truncation length (default: 500)
 - `ERROR_MESSAGE_PREFIX`: Error message prefix (default: "I encountered an error")
 - `MAX_SEARCH_RESULTS`: Maximum search results (default: 5)
 - `DEFAULT_SEARCH_ENGINE`: Default search engine (bing/google)
+- `CACHE_TTL`: Cache time-to-live in seconds (default: 3600)
 - `CORS_ORIGINS`: Allowed frontend origins (comma-separated)
 
 ### Frontend Configuration (`frontend/.env`)
@@ -192,98 +191,10 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 playwright install
-
-# Health check
-python3 ../health-check.py
 ```
 
 ### Frontend Commands
 ```bash
 cd frontend
-
 npm run dev             # Start development server
-npm run build           # Build for production
-npm run preview         # Preview production build
-npm run lint            # Run ESLint
-npm run lint:fix        # Fix ESLint issues
-npm run type-check      # TypeScript type checking
-npm run clean           # Clean node_modules and dist
 ```
-
-## Development
-
-### Full Stack Development
-Start both services in separate terminals:
-
-**Terminal 1 - Backend:**
-```bash
-cd backend
-python3 run.py
-```
-
-**Terminal 2 - Frontend:**
-```bash
-cd frontend
-npm run dev
-```
-
-### Building for Production
-
-#### Frontend
-```bash
-cd frontend
-npm run build
-npm run preview  # Preview production build
-```
-
-#### Backend
-```bash
-cd backend
-source venv/bin/activate
-uvicorn app.main:app --host 0.0.0.0 --port 8000
-```
-
-## Troubleshooting
-
-### Common Issues
-
-1. **"GEMINI_API_KEY not found"**
-   - Make sure you've added your API key to `backend/.env`
-   - Restart the backend server after adding the key
-
-2. **"Backend server not responding"**
-   - Check if the backend is running on port 8000
-   - Verify the API_BASE_URL in frontend/.env
-
-3. **Playwright browser issues**
-   - Run `playwright install` in the backend directory
-   - Make sure you have sufficient disk space
-
-4. **Port already in use**
-   - Backend (8000): Change `API_PORT` in backend/.env
-   - Frontend (5173): Use `npm run dev -- --port 3000`
-
-### Logs and Debugging
-
-- Backend logs are printed to console
-- Check browser console for frontend errors
-- Use the `/health` endpoint to verify backend status
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License.
-
-## Support
-
-If you encounter any issues or have questions:
-1. Check the troubleshooting section
-2. Review the API documentation
-3. Open an issue on GitHub
