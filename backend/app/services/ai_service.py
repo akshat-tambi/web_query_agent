@@ -209,15 +209,21 @@ class AIService:
     
     def _create_answer_prompt(self, query: str, context: str) -> str:
         """Create the prompt for answer generation"""
-        return f"""
-        Based on the following web content, provide a comprehensive and accurate answer to the user's question.
-        
-        Question: {query}
-        
-        Context from web sources:
-        {context}
-        
-        Please provide a detailed, well-structured answer that directly addresses the question using the information from the sources. If the sources don't contain enough information to fully answer the question, please mention that.
-        """
+        return f"""You are a helpful assistant that provides clear, accurate information based on web sources.
+
+Question: {query}
+
+Context from web sources:
+{context}
+
+Instructions:
+- Provide a comprehensive answer using the information from the sources
+- Write in clear, plain text without any special formatting characters like asterisks, bold markers, or markdown
+- Structure your response in easy-to-read paragraphs
+- If sources don't contain enough information, mention that limitation
+- Keep the tone conversational and informative
+- Do not use any special characters or formatting symbols in your response
+
+Answer:"""
 
 ai_service = AIService()

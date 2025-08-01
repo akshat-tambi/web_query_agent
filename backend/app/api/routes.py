@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 @router.post("/query", response_model=QueryResponse)
-async def process_query(request: QueryRequest, background_tasks: BackgroundTasks):
+async def process_query(request: QueryRequest):
     start_time = time.time()
     
     try:
