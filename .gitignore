@@ -54,3 +54,5 @@ Thumbs.db
 
 # Playwright browsers
 playwright-browsers/
+
+node_modules/

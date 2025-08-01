@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Send, Clock, ExternalLink, Server, Database } from 'lucide-react';
+import { Search, Send, Clock, ExternalLink, Database } from 'lucide-react';
 import ApiService, { handleApiError } from './services/api';
 import type { QueryResponse, CacheStats } from './services/api';
 import './App.css';
@@ -13,23 +13,11 @@ function App() {
   const [searchEngine, setSearchEngine] = useState('bing');
   const [useCache, setUseCache] = useState(true);
   const [cacheStats, setCacheStats] = useState<CacheStats | null>(null);
-  const [backendStatus, setBackendStatus] = useState<'unknown' | 'healthy' | 'error'>('unknown');
 
-  // Check backend health on component mount
+  // Load cache stats on component mount
   useEffect(() => {
-    checkBackendHealth();
     loadCacheStats();
   }, []);
-
-  const checkBackendHealth = async () => {
-    try {
-      await ApiService.healthCheck();
-      setBackendStatus('healthy');
-    } catch (error) {
-      setBackendStatus('error');
-      console.error('Backend health check failed:', error);
-    }
-  };
 
   const loadCacheStats = async () => {
     try {
@@ -65,31 +53,15 @@ function App() {
     }
   };
 
-  const initializeAI = async () => {
-    try {
-      setLoading(true);
-      await ApiService.initializeAI();
-      checkBackendHealth();
-    } catch (error) {
-      setError(handleApiError(error));
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="app">
       <header className="app-header">
         <div className="header-content">
           <h1>
             <Search className="header-icon" />
-            Ripplica Web Query
+            Web Query
           </h1>
           <div className="status-indicators">
-            <div className={`status-indicator ${backendStatus}`}>
-              <Server size={16} />
-              <span>Backend: {backendStatus}</span>
-            </div>
             {cacheStats && (
               <div className="status-indicator healthy">
                 <Database size={16} />
@@ -169,15 +141,6 @@ function App() {
               </div>
             </div>
           </form>
-
-          {backendStatus === 'error' && (
-            <div className="error-section">
-              <p>Backend server is not responding. Would you like to initialize it?</p>
-              <button onClick={initializeAI} disabled={loading} className="init-button">
-                Initialize AI Service
-              </button>
-            </div>
-          )}
         </div>
 
         {loading && (

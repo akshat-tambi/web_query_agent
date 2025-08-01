@@ -1,10 +1,14 @@
-# Ripplica Web Query Application
+# Web Query Application
 
 An AI-powered web query application with intelligent scraping, caching, and a modern React frontend.
 
-## Architecture
+## Architectu└── 🚀 Development Workflow
+    1. cd backend && python3 run.py     # Start backend
+    2. cd frontend && npm run dev        # Start frontend (new terminal)
 
-This project is structured as a **frontend-backend architecture**:
+🔗 URLs (when running):
+  Frontend:  http://localhost:5173
+  Backend:   http://localhost:8000
 
 - **Backend**: FastAPI REST API with AI/ML capabilities
 - **Frontend**: Modern React application built with Vite
@@ -31,7 +35,7 @@ This project is structured as a **frontend-backend architecture**:
 ### Prerequisites
 - Python 3.8+
 - Node.js 16+
-- npm or yarn
+- npm
 
 ### Environment Setup
 
@@ -53,22 +57,7 @@ This project is structured as a **frontend-backend architecture**:
    - Create a new API key
    - Add it to `backend/.env` as `GEMINI_API_KEY=your_key_here`
 
-### Automated Setup (Recommended)
-
-Run the automated setup script:
-```bash
-./start.sh
-```
-
-This script will:
-- Check dependencies
-- Set up Python virtual environment
-- Install all backend dependencies
-- Install Playwright browsers
-- Install frontend dependencies
-- Start both backend and frontend servers
-
-### Manual Setup
+### Development Setup
 
 #### Backend Setup
 ```bash
@@ -85,7 +74,7 @@ pip install -r requirements.txt
 playwright install
 
 # Start the server
-python run.py
+python3 run.py
 ```
 
 #### Frontend Setup
@@ -126,72 +115,132 @@ When the backend is running, visit:
 ## Project Structure
 
 ```
-ripplica-project/
-├── backend/                 # FastAPI backend
+📁 AI Web Query Application
+======================================
+
+🗂️  Project Root
+├── � package.json        # Root scripts & dependencies
+├── �🔧 Backend (FastAPI)
 │   ├── app/
-│   │   ├── api/            # API routes
-│   │   ├── models/         # Pydantic models
-│   │   ├── services/       # Business logic
-│   │   ├── config.py       # Configuration
-│   │   └── main.py         # FastAPI app
-│   ├── requirements.txt    # Python dependencies
-│   ├── run.py             # Server startup
-│   └── .env               # Environment variables
-├── frontend/               # React frontend
+│   │   ├── api/           # REST API endpoints  
+│   │   ├── models/        # Pydantic schemas
+│   │   ├── services/      # Business logic
+│   │   ├── config.py      # Configuration
+│   │   └── main.py        # FastAPI application
+│   ├── data/              # 💾 Cache files (FAISS)
+│   ├── requirements.txt   # Python dependencies
+│   ├── run.py            # Server startup
+│   ├── .env              # Environment variables
+│   └── COMMANDS.md       # Backend commands
+│
+├── 🎨 Frontend (React + Vite)
 │   ├── src/
-│   │   ├── services/      # API service
-│   │   ├── App.tsx        # Main component
-│   │   └── ...
-│   ├── package.json       # Node dependencies
+│   │   ├── services/     # API client
+│   │   ├── App.tsx       # Main component
+│   │   └── ...           # Other components
+│   ├── package.json      # Node dependencies & scripts
+│   ├── tsconfig.json     # TypeScript configuration
 │   └── .env              # Environment variables
-├── data/                  # Shared data directory
-│   ├── query_cache.faiss  # FAISS index
-│   └── query_metadata.json # Cache metadata
-└── start.sh              # Automated startup script
+│
+└── � Available Commands
+    npm run dev             # Start both services
+    npm run dev:backend     # Backend only
+    npm run dev:frontend    # Frontend only
+    npm run install:all     # Install all dependencies
+    npm run build           # Build for production
+    npm run health          # Check system health
+
+🔗 URLs (when running):
+  Frontend:  http://localhost:5173
+  Backend:   http://localhost:8000
+  API Docs:  http://localhost:8000/docs
+
 ```
 
 ## Configuration
 
 ### Backend Configuration (`backend/.env`)
-- `GEMINI_API_KEY`: Your Google Gemini API key
+- `GEMINI_API_KEY`: Your Google Gemini API key **(Required)**
 - `API_HOST`: Server host (default: 0.0.0.0)
 - `API_PORT`: Server port (default: 8000)
 - `DEBUG`: Debug mode (true/false)
+- `EMBEDDING_DIMENSION`: Vector dimension (default: 384)
+- `SIMILARITY_THRESHOLD`: Cache similarity threshold (default: 0.85)
+- `MAX_CONTENT_LENGTH`: Content truncation length (default: 500)
+- `ERROR_MESSAGE_PREFIX`: Error message prefix (default: "I encountered an error")
 - `MAX_SEARCH_RESULTS`: Maximum search results (default: 5)
 - `DEFAULT_SEARCH_ENGINE`: Default search engine (bing/google/duckduckgo)
+- `CORS_ORIGINS`: Allowed frontend origins (comma-separated)
 
 ### Frontend Configuration (`frontend/.env`)
 - `VITE_API_BASE_URL`: Backend API URL (default: http://localhost:8000)
 
-## Development
+## Available Commands
 
-### Backend Development
+### Backend Commands
 ```bash
 cd backend
+
+# Development
+python3 run.py           # Start with auto-reload
+
+# Production  
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+# Setup
+python3 -m venv venv
 source venv/bin/activate
-python run.py  # Runs with auto-reload in debug mode
+pip install -r requirements.txt
+playwright install
+
+# Health check
+python3 ../health-check.py
 ```
 
-### Frontend Development
+### Frontend Commands
 ```bash
 cd frontend
-npm run dev  # Runs with hot reload
+
+npm run dev             # Start development server
+npm run build           # Build for production
+npm run preview         # Preview production build
+npm run lint            # Run ESLint
+npm run lint:fix        # Fix ESLint issues
+npm run type-check      # TypeScript type checking
+npm run clean           # Clean node_modules and dist
+```
+
+## Development
+
+### Full Stack Development
+Start both services in separate terminals:
+
+**Terminal 1 - Backend:**
+```bash
+cd backend
+python3 run.py
+```
+
+**Terminal 2 - Frontend:**
+```bash
+cd frontend
+npm run dev
 ```
 
 ### Building for Production
-
-#### Backend
-```bash
-cd backend
-pip install gunicorn
-gunicorn app.main:app --host 0.0.0.0 --port 8000
-```
 
 #### Frontend
 ```bash
 cd frontend
 npm run build
 npm run preview  # Preview production build
+```
+
+#### Backend
+```bash
+cd backend
+source venv/bin/activate
+uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
 ## Troubleshooting

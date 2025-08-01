@@ -1,8 +1,4 @@
-"""
-Pydantic models for request/response schemas
-"""
-
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 from pydantic import BaseModel, Field
 from datetime import datetime
 
@@ -31,17 +27,3 @@ class QueryResponse(BaseModel):
     cached: bool = False
     timestamp: datetime = Field(default_factory=datetime.now)
     processing_time: Optional[float] = None
-
-
-class HealthResponse(BaseModel):
-    """Health check response"""
-    status: str
-    timestamp: datetime = Field(default_factory=datetime.now)
-    version: str = "1.0.0"
-
-
-class ErrorResponse(BaseModel):
-    """Error response model"""
-    error: str
-    detail: Optional[str] = None
-    timestamp: datetime = Field(default_factory=datetime.now)

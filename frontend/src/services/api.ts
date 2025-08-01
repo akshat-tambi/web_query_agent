@@ -1,17 +1,15 @@
 import axios from 'axios';
 
-// API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api/v1`,
-  timeout: 120000, // 2 minutes timeout for queries (web scraping + AI can take time)
+  timeout: 300000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Types for API requests and responses
 export interface QueryRequest {
   query: string;
   max_results?: number;
@@ -35,57 +33,32 @@ export interface QueryResponse {
   processing_time?: number;
 }
 
-export interface HealthResponse {
-  status: string;
-  timestamp: string;
-  version: string;
-}
-
 export interface CacheStats {
   total_cached_queries: number;
   faiss_index_size: number;
   cache_enabled: boolean;
 }
 
-// API Service Class
 export class ApiService {
-  // Health check
-  static async healthCheck(): Promise<HealthResponse> {
-    const response = await api.get<HealthResponse>('/health');
-    return response.data;
-  }
-
-  // Process query
   static async processQuery(request: QueryRequest): Promise<QueryResponse> {
     const response = await api.post<QueryResponse>('/query', request);
     return response.data;
   }
 
-  // Initialize AI service
-  static async initializeAI(): Promise<{ message: string }> {
-    const response = await api.post<{ message: string }>('/initialize');
-    return response.data;
-  }
-
-  // Get cache stats
   static async getCacheStats(): Promise<CacheStats> {
     const response = await api.get<CacheStats>('/cache/stats');
     return response.data;
   }
 }
-
-// Error handling wrapper
 export const handleApiError = (error: any): string => {
   if (axios.isAxiosError(error)) {
     if (error.response) {
-      // Server responded with error status
       const detail = error.response.data?.detail;
       if (detail && typeof detail === 'object' && detail.error) {
         return detail.error;
       }
       return detail || error.response.data?.message || `Server error: ${error.response.status}`;
     } else if (error.request) {
-      // Network error or timeout
       if (error.code === 'ECONNABORTED') {
         return 'Query is taking longer than expected. This usually happens for new queries that require web scraping. Please try again - cached results will be much faster.';
       }
