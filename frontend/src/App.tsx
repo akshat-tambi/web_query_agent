@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import ApiService, { handleApiError } from './services/api';
 import type { QueryResponse, CacheStats } from './services/api';
+import { formatMarkdownText } from './utils/textFormatter';
 import './App.css';
 
 function App() {
@@ -30,15 +31,13 @@ function App() {
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  // Load search history from localStorage
   useEffect(() => {
-    const history = localStorage.getItem('ripplica-search-history');
+    const history = localStorage.getItem('web-query-agent-search-history');
     if (history) {
       setSearchHistory(JSON.parse(history));
     }
   }, []);
 
-  // Load cache stats on component mount
   useEffect(() => {
     loadCacheStats();
   }, []);
@@ -69,12 +68,10 @@ function App() {
       });
       setResponse(result);
       
-      // Add to search history
       const newHistory = [query.trim(), ...searchHistory.filter(q => q !== query.trim())].slice(0, 8);
       setSearchHistory(newHistory);
-      localStorage.setItem('ripplica-search-history', JSON.stringify(newHistory));
+      localStorage.setItem('web-query-agent-search-history', JSON.stringify(newHistory));
       
-      // Refresh cache stats after successful query
       loadCacheStats();
     } catch (error) {
       setError(handleApiError(error));
@@ -100,7 +97,7 @@ function App() {
         <div className="header-content">
           <h1>
             <Brain className="header-icon" />
-            Ripplica
+            Web Query Agent
           </h1>
           <div className="status-indicators">
             {cacheStats && (
@@ -132,7 +129,6 @@ function App() {
               />
             </div>
 
-            {/* Quick suggestions */}
             {!query && !response && (
               <div className="quick-suggestions">
                 <h4>Try asking about:</h4>
@@ -152,7 +148,6 @@ function App() {
               </div>
             )}
 
-            {/* Search history */}
             {searchHistory.length > 0 && !loading && (
               <div className="search-history">
                 <h4>
@@ -175,7 +170,6 @@ function App() {
               </div>
             )}
 
-            {/* Advanced options toggle */}
             <div className="advanced-toggle">
               <button
                 type="button"
@@ -187,7 +181,6 @@ function App() {
               </button>
             </div>
 
-            {/* Advanced options */}
             {showAdvanced && (
               <div className="options-grid">
                 <div className="option-group">
@@ -300,8 +293,14 @@ function App() {
             </div>
 
             <div className="response-content">
-              <div className="response-text">
-                {response.answer}
+              <div className="ai-answer-section">
+                <div className="ai-answer-header">
+                  <Brain size={20} />
+                  <h3>Summary</h3>
+                </div>
+                <div className="response-text">
+                  {formatMarkdownText(response.answer)}
+                </div>
               </div>
 
               {response.sources.length > 0 && (

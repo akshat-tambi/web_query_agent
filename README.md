@@ -1,8 +1,8 @@
-# Web Query Application
+# Web Query Agent
 
-An AI-powered web query application with intelligent scraping, caching, and a modern React frontend.
+An AI-powered web query agent with intelligent scraping, semantic caching, and a modern React frontend.
 
-## Architectu└── 🚀 Development Workflow
+## Architecture└── 🚀 Development Workflow
     1. cd backend && python3 run.py     # Start backend
     2. cd frontend && npm run dev        # Start frontend (new terminal)
 
