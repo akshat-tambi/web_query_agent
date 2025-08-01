@@ -40,9 +40,9 @@ venv.bak/
 *~
 
 # Data files
-data/*.faiss
-data/*.json
-data/*.pkl
+data/
+backend/data/
+*/data/
 
 # Logs
 *.log
