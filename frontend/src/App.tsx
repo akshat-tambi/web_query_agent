@@ -206,7 +206,6 @@ function App() {
                   >
                     <option value="bing">Bing</option>
                     <option value="google">Google</option>
-                    <option value="duckduckgo">DuckDuckGo</option>
                   </select>
                 </div>
 

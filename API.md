@@ -97,7 +97,7 @@ Common HTTP status codes:
 
 ### `/query` endpoint
 - `max_results` (integer, 1-20): Number of search results to process (default: 5)
-- `search_engine` (string): Search engine to use - "bing", "google", or "duckduckgo" (default: "bing")
+- `search_engine` (string): Search engine to use - "bing", "google" (default: "bing")
 
 **Note**: Caching is now handled automatically by the backend for optimal performance.
 

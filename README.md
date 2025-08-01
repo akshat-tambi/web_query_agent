@@ -94,7 +94,7 @@ npm run dev
 2. **Enter your query** in the search box
 3. **Configure options** (optional):
    - Max results (3-15)
-   - Search engine (Bing, Google, DuckDuckGo)
+   - Search engine (Bing, Google)
    - Enable/disable caching
 4. **Click Submit** and wait for the AI-generated response
 5. **View sources** and click links to visit original content
@@ -169,7 +169,7 @@ When the backend is running, visit:
 - `MAX_CONTENT_LENGTH`: Content truncation length (default: 500)
 - `ERROR_MESSAGE_PREFIX`: Error message prefix (default: "I encountered an error")
 - `MAX_SEARCH_RESULTS`: Maximum search results (default: 5)
-- `DEFAULT_SEARCH_ENGINE`: Default search engine (bing/google/duckduckgo)
+- `DEFAULT_SEARCH_ENGINE`: Default search engine (bing/google)
 - `CORS_ORIGINS`: Allowed frontend origins (comma-separated)
 
 ### Frontend Configuration (`frontend/.env`)
