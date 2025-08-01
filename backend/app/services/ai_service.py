@@ -81,6 +81,59 @@ class AIService:
         except Exception as e:
             logger.error(f"Error saving FAISS index: {e}")
     
+    async def validate_query(self, query: str) -> bool:
+        """
+        Validate if the query is a valid web search query using Gemini
+        
+        Args:
+            query: User input query
+            
+        Returns:
+            bool: True if valid, False if invalid
+        """
+        try:
+            if not self._initialized:
+                await self.initialize()
+                
+            logger.info(f"Validating query: {query}")
+            
+            validation_prompt = f"""
+            Analyze the following user input. Is it a query that can be answered by a web search?
+            
+            Examples of VALID queries:
+            - "What is the capital of France?"
+            - "Best restaurants in Tokyo"
+            - "How to learn Python programming"
+            - "Latest news about AI"
+            - "Climate change solutions 2024"
+            - "Explain quantum computing"
+            
+            Examples of INVALID queries:
+            - "Walk my pet"
+            - "Add apples to grocery list"
+            - "Remind me to call mom"
+            - "Turn off the lights"
+            - "Play music"
+            - "Set a timer"
+            
+            User input: "{query}"
+            
+            Respond with only the word "VALID" or "INVALID".
+            """
+            
+            response = await asyncio.to_thread(self.llm.invoke, validation_prompt)
+            result = response.content.strip().upper()
+            
+            is_valid = result == "VALID"
+            logger.info(f"Query validation result: {result}")
+            
+            return is_valid
+            
+        except Exception as e:
+            logger.error(f"Error validating query: {e}")
+            # Default to valid if validation fails
+            return True
+
     async def process_query(
         self, 
         query: str, 
@@ -96,6 +149,11 @@ class AIService:
         """
         if not self._initialized:
             await self.initialize()
+
+        is_valid = await self.validate_query(query)
+        if not is_valid:
+            logger.warning(f"Invalid query rejected: {query}")
+            return "This query doesn't appear to be a valid web search query. Please try asking a question that can be answered with web information.", [], False
         
         if use_cache:
             cached_result = await self._check_cache(query)
